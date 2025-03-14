@@ -1,0 +1,27 @@
+{
+  "name": "auth-project",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "DEBUG=auth-project:* nodemon ./bin/www"
+  },
+  "type": "module",
+  "dependencies": {
+    "cookie-parser": "~1.4.7",
+    "crypto-js": "^4.2.0",
+    "debug": "~4.4.0",
+    "dotenv": "^16.4.7",
+    "ejs": "~3.1.10",
+    "express": "~4.21.2",
+    "http-errors": "~2.0.0",
+    "joi": "^17.13.3",
+    "lodash": "^4.17.21",
+    "md5": "^2.3.0",
+    "moment": "^2.30.1",
+    "morgan": "~1.10.0",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
