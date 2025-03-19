@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import {Router} from 'express';
 
 import controller from '../controllers/users.controller.js';
 import schemas from '../schemas/users.js';
@@ -9,16 +9,16 @@ const router = Router();
 
 // renders
 router.get('/login', (req, res) => {
-  res.render('login');
+    res.render('login');
 });
 
 router.get('/register', (req, res) => {
-  res.render('register');
+    res.render('register');
 });
 
 // apis
 router.get('/profile', auth, controller.profile);
 router.post('/login', controller.login);
-router.post('/register',validate(schemas.register, "body"), controller.register);
+router.post('/register', validate(schemas.register, "body"), controller.register);
 
 export default router;

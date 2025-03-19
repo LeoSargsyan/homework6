@@ -6,10 +6,11 @@ export default (schemas, target) => {
             abortEarly: false,
         });
 
-        if(!_.isEmpty(error)){
+        if(_.isEmpty(error)){
             next();
             return
         }
+        console.log(error)
 
         console.log(JSON.stringify(error, null, 2))
 

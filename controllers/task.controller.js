@@ -1,100 +1,86 @@
-import fs from 'fs';
-import path from 'path';
+import db from '../clients/db.mysql.js';
 import moment from 'moment';
-import {v4 as uuidv4} from 'uuid';
-
-const TASKS_FILE = path.resolve('tasks.json');
-
-const readTasks = () => {
-  try {
-    const data = fs.readFileSync(TASKS_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    return [];
-  }
-};
-
-const writeTasks = (tasks) => {
-  try {
-    fs.writeFileSync(TASKS_FILE, JSON.stringify(tasks, null, 2), 'utf-8');
-    console.log('Tasks successfully saved to file.');
-  } catch (error) {
-    console.error('Error writing to tasks file:', error);
-  }
-};
-
-let tasks = readTasks();
 
 export default {
-  getTasks: (req, res) => {
-    const {userId} = req.params;
-    const userTasks = tasks.filter(task => task.userId === userId)
 
-    if (userTasks.length === 0) {
-      return res.status(404).json({message: 'No tasks found for this user'});
-    }
-
-    res.status(200).json({tasks: userTasks});
-  },
-
-  createTask: (req, res) => {
-    console.log("Received request to create task:", req.body);
-    const {title, description, taskDate, userId} = req.body;
-
-    if (!title || !description || !taskDate || !userId) {
-      return res.status(422).json({message: 'Missing required fields'});
-    }
-
-    const newTask = {
-      id: uuidv4(),
-      title,
-      description,
-      taskDate: moment(taskDate).toISOString(),
-      userId,
-    };
-
-    tasks.push(newTask);
-    console.log("Updated tasks list:", tasks);
+  getTasks: async (req, res) => {
+    const { userId } = req.params;
 
     try {
-      writeTasks(tasks);
-    } catch (error) {
-      console.error('Error saving task:', error);
-      return res.status(500).json({message: 'Error saving task'});
-    }
+      const [tasks] = await db.query('SELECT * FROM tasks WHERE user_id = ?', [userId]);
 
-    res.status(201).json({task: newTask, message: 'Task successfully created'});
+      if (tasks.length === 0) {
+        return res.status(404).json({ message: 'No tasks found for this user' });
+      }
+
+      res.status(200).json({ tasks });
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      res.status(500).json({ message: 'Error fetching tasks' });
+    }
   },
 
-  updateTask: (req, res) => {
-    const {taskId} = req.params;
-    const {title, description, taskDate} = req.body;
+  createTask: async (req, res) => {
+    const { title, description, taskDate } = req.body;
 
-    const task = tasks.find(task => task.id === taskId);
-
-    if (!task) {
-      return res.status(404).json({message: 'Task not found'});
+    if (!title || !description || !taskDate) {
+      return res.status(422).json({ message: 'Missing required fields' });
     }
 
-    task.title = title || task.title;
-    task.description = description || task.description;
-    task.taskDate = taskDate ? moment(taskDate).toISOString() : task.taskDate;
-
-
-    console.log(tasks)
     try {
-      writeTasks(tasks);
-    } catch (error) {
-      return res.status(500).json({message: 'Error updating task'});
-    }
+      console.log('Creating task with the following data:', { title, description, taskDate });
 
-    res.status(200).json({task, message: 'Task successfully updated'});
+      const [result] = await db.query(`
+        INSERT INTO tasks (title, description, taskDate)
+        VALUES (?, ?, ?)
+      `, [title, description, taskDate]);
+
+      console.log('Task created successfully, ID:', result.insertId);
+
+      res.status(201).json({
+        message: 'Task successfully created',
+        task: { id: result.insertId, title, description, taskDate },
+      });
+    } catch (err) {
+      console.error('Error creating task:', err);
+      res.status(500).json({ message: 'Error creating task', error: err.message });
+    }
   },
 
+
+
+  updateTask: async (req, res) => {
+    const { taskId } = req.params;
+    const { title, description, taskDate } = req.body;
+
+    try {
+      const [tasks] = await db.query('SELECT * FROM tasks WHERE id = ?', [taskId]);
+      const task = tasks[0];
+
+      if (!task) {
+        return res.status(404).json({ message: 'Task not found' });
+      }
+
+      const updatedTask = {
+        title: title || task.title,
+        description: description || task.description,
+        taskDate: taskDate ? moment(taskDate).toISOString() : task.taskDate,
+      };
+
+      await db.query(`
+        UPDATE tasks
+        SET title = ?, description = ?, taskDate = ?
+        WHERE id = ?
+      `, [updatedTask.title, updatedTask.description, updatedTask.taskDate, taskId]);
+
+      res.status(200).json({ task: updatedTask, message: 'Task successfully updated' });
+    } catch (error) {
+      console.error('Error updating task:', error);
+      return res.status(500).json({ message: 'Error updating task' });
+    }
+  },
 };
 
-
-console.log('Tasks are being written to file', tasks);
 
 
 

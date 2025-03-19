@@ -1,3 +1,4 @@
+import "./migrate.js"
 import path from 'path';
 import logger from 'morgan';
 import express from 'express';

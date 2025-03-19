@@ -1,11 +1,10 @@
 import express from 'express';
-import bodyParser from 'body-parser';
 import taskRoutes from '../controllers/task.controller.js';
 
-const app = express();
-app.use(bodyParser.json());
+const router = express.Router();
 
-app.get('/tasks/:userId', taskRoutes.getTasks);
-app.post('/tasks', taskRoutes.createTask);
-app.get('/tasks/:userId', taskRoutes.getTasks);
-app.put('/tasks/:taskId', taskRoutes.updateTask);
+router.post('/', taskRoutes.createTask);
+router.get('/:userId', taskRoutes.getTasks);
+router.put('/:taskId', taskRoutes.updateTask);
+
+export default router;
