@@ -5,7 +5,7 @@ import tasks from './tasks.js';
 
 const router = Router();
 
-router.get(['/', '/home?'], (req, res) => {
+router.get(['/', '/home'], (req, res) => {
   res.render('home', { title: 'Auth test project' });
 });
 

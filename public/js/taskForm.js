@@ -7,7 +7,8 @@ document.getElementById('taskForm').addEventListener('submit', async (event) => 
         date: document.getElementById('date').value,
     };
 
-    console.log(taskData);
+
+    console.log('Sending data:', taskData);
 
     try {
         const response = await fetch('/tasks', {
@@ -18,16 +19,15 @@ document.getElementById('taskForm').addEventListener('submit', async (event) => 
             body: JSON.stringify(taskData),
         });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error('Error from server:', errorData);
-        }
-
         const data = await response.json();
-        console.log(data);
+
+        if (!response.ok) {
+            console.error('server error:', data);
+        } else {
+            console.log('Task successfully created:', data);
+        }
     } catch (error) {
-        console.error('Error creating task:', error);
+        console.error("Error creating task:", error);
     }
 });
-
 

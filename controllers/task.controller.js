@@ -21,25 +21,25 @@ export default {
   },
 
   createTask: async (req, res) => {
-    const { title, description, taskDate } = req.body;
+    const { title, description, date } = req.body;
 
-    if (!title || !description || !taskDate) {
+    if (!title || !description || !date) {
       return res.status(422).json({ message: 'Missing required fields' });
     }
 
     try {
-      console.log('Creating task with the following data:', { title, description, taskDate });
+      console.log('Creating task with the following data:', { title, description, date });
 
       const [result] = await db.query(`
-        INSERT INTO tasks (title, description, taskDate)
+        INSERT INTO tasks (title, description, date)
         VALUES (?, ?, ?)
-      `, [title, description, taskDate]);
+      `, [title, description, date]);
 
       console.log('Task created successfully, ID:', result.insertId);
 
       res.status(201).json({
         message: 'Task successfully created',
-        task: { id: result.insertId, title, description, taskDate },
+        task: { id: result.insertId, title, description, date },
       });
     } catch (err) {
       console.error('Error creating task:', err);
@@ -51,7 +51,7 @@ export default {
 
   updateTask: async (req, res) => {
     const { taskId } = req.params;
-    const { title, description, taskDate } = req.body;
+    const { title, description, date } = req.body;
 
     try {
       const [tasks] = await db.query('SELECT * FROM tasks WHERE id = ?', [taskId]);
@@ -64,14 +64,14 @@ export default {
       const updatedTask = {
         title: title || task.title,
         description: description || task.description,
-        taskDate: taskDate ? moment(taskDate).toISOString() : task.taskDate,
+        taskDate: date ? moment(date).toISOString() : task.date,
       };
 
       await db.query(`
         UPDATE tasks
-        SET title = ?, description = ?, taskDate = ?
+        SET title = ?, description = ?, date = ?
         WHERE id = ?
-      `, [updatedTask.title, updatedTask.description, updatedTask.taskDate, taskId]);
+      `, [updatedTask.title, updatedTask.description, updatedTask.date, taskId]);
 
       res.status(200).json({ task: updatedTask, message: 'Task successfully updated' });
     } catch (error) {
